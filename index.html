@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>gua-game</title>
+	<style type="text/css">
+		#game{
+			width: 500px;
+			height: 500px;		
+			position: relative;
+		}
+		#my-canvas{
+			border: 1px solid #000;
+		}
+		.mask{
+			position: absolute;
+			left: 0;
+			top: 0;
+			width: 100%;
+			height: 100%;
+			background: rgba(0, 0, 0, .6);
+			display: none;
+		}
+		.gameover{
+			position: absolute;
+			width: 200px
+			height:120;
+			left: 50%;
+			margin-left: -100px;
+			top: 50%;
+			margin-top: -80px;
+			background: #fff;
+			display: none;
+		}
+		#score{
+			width: 200px;
+			height: 30px;
+			font-size: 18px;
+			line-height: 30px;
+			color: #404040;
+			text-align: center;
+			border: 1px dashed #f2f2f2;
+		}
+		#gameovertitle{
+			width: 200px;
+			height: 30px;
+			font-size: 18px;
+			line-height: 30px;
+			color: red;
+			text-align: center;
+			border: 1px dashed #f2f2f2;
+
+		}
+		#restargamebtn{
+			width: 200px;
+			height: 30px;
+			font-size: 18px;
+			line-height: 30px;
+			color: green;
+			text-align: center;
+			border: 1px dashed #f2f2f2;
+		}
+	</style>
+</head>
+<body>
+<div id='game'>
+	<canvas id='my-canvas' ></canvas>
+	<div class='mask'></div>
+	<div class="gameover">
+		<div id='score'></div>
+		<div id='gameovertitle'>游戏结束</div>
+		<div id='restargamebtn' >重新开始</div>
+	</div>
+</div>
+<script type="text/javascript" src='keydownaction.js'></script>
+<script type="text/javascript">
+	var log = console.log.bind(console);
+	var worm = () => {
+		var  o = {
+			health:[],
+			direction:1,
+			arrow:'',
+			speed:1,
+		}
+		o.init = () => {
+			o.health = [[2,2],[2,3],[3,3],[4,3],[5,3],[6,3],[7,3],[8,3]]
+			o.direction = 1
+			o.arrow ='x'
+			o.speed = 1
+		}
+		o.move = () => {
+			
+			o.health.shift()
+			
+			var cur = o.health[o.health.length -1]
+			switch(o.direction){
+				case 1:
+					cur = [cur[0] + o.speed, cur[1]]
+					break
+				case 2:
+					cur = [cur[0], cur[1] + o.speed]
+					break
+				case -1:
+					cur = [cur[0] - o.speed, cur[1]]
+					break
+				case -2:
+					cur = [cur[0], cur[1] - o.speed]
+					break
+			}
+			o.health.push(cur)
+			
+			return o.judge(cur)
+
+		}
+		o.judge = (position) => {
+				return position.some(v => v == 0 || v == 25 - 1) || o.health.slice(0,o.health.length - 1).some(v => {
+					return v[0] == position[0] && v[1] == position[1]
+				})
+		}
+		o.changeDirection = (direction) => {
+			if(direction + o.direction == 0) return
+			o.direction = direction
+		}
+		return o
+	}
+	var __main = () => {
+		var isStop = true
+		var myCanvas = document.querySelector('#my-canvas');
+		var ctx = myCanvas.getContext('2d')	
+		var gameInterval
+		var _mask = document.querySelector('.mask'), _gameover = document.querySelector('.gameover')
+		const __WIDTH = 500, __HEIGHT = 500, __GRIDNUM = 25, __FPS = 4, __SPEED = __WIDTH / __GRIDNUM;
+		var grid_width = 500 / __GRIDNUM;
+		myCanvas.setAttribute('width', __WIDTH)
+		myCanvas.setAttribute('height', __HEIGHT)
+		var drawBg = () => {
+			ctx.beginPath();
+			for(var i = 1; i < __GRIDNUM; i++){
+				ctx.moveTo(grid_width * i,0)
+				ctx.lineTo(grid_width * i,__WIDTH);
+				ctx.stroke()
+				ctx.moveTo(0,grid_width * i);
+				ctx.lineTo(__WIDTH,grid_width * i);
+				ctx.stroke()
+			}		
+		}
+		restargamebtn.addEventListener('click', () => {
+			handleRestartGame()
+		}, false)
+		var Oworm = worm()
+		Oworm.init()
+		console.log(Oworm)
+		var registerMoveListener = (e) => {
+				console.log('keydown')
+				switch(e.keyCode){
+					case 37:
+						log('arrow_left')
+						Oworm.changeDirection(-1)
+						break;
+					case 38:
+						log('arrow_top')
+						Oworm.changeDirection(-2)
+						break;
+					case 39:
+						log('arrow_right')
+						Oworm.changeDirection(1)
+						break;
+					case 40:
+						log('arrow_down')
+						Oworm.changeDirection(2)
+						break;
+					
+				}
+		}
+		var registerControlListener = (e) => {
+			switch(e.keyCode){
+				case 32:
+					console.log(isStop)
+					if(isStop){
+						goOnGame()
+					}else{
+						stopGame()
+					}
+					break;
+			}
+		}
+		var registerAction = () => {
+			handleAction('R_MOVE')
+			handleAction('R_CONTROL')
+		}
+		var stopGame = () => {
+			document.removeEventListener('keydown', registerMoveListener, false)
+			isStop = !0
+			clearInterval(gameInterval)
+		}
+		var drawWorm = () => {
+			var list = Oworm.health
+			ctx.fillStyle = 'black'
+			for(var i = 0; i < list.length; i++){
+				ctx.moveTo(grid_width*list[i][0],grid_width*list[i][1]);
+				ctx.lineTo(grid_width*list[i][0],grid_width*(list[i][1] + 1))
+				ctx.lineTo(grid_width*(list[i][0] + 1),grid_width*(list[i][1] + 1))
+				ctx.lineTo(grid_width*(list[i][0] + 1),grid_width*list[i][1])
+				ctx.lineTo(grid_width*list[i][0],grid_width*list[i][1])
+				
+			} 
+			ctx.fill()
+		}
+		var drawError = () => {
+			console.log('变红')
+			var position = Oworm.health[Oworm.health.length - 1]
+
+			ctx.moveTo(grid_width*position[0],grid_width*position[1]);
+			ctx.lineTo(grid_width*position[0],grid_width*(position[1] + 1))
+			ctx.lineTo(grid_width*(position[0] + 1),grid_width*(position[1] + 1))
+			ctx.lineTo(grid_width*(position[0] + 1),grid_width*position[1])
+			ctx.lineTo(grid_width*position[0],grid_width*position[1])
+			ctx.fillStyle = 'red'
+			ctx.fill()	
+		}
+		var modeMorn = () => {
+
+		}
+		
+		var drawCanvas = () => {
+			drawWorm()
+			drawBg()
+		}
+		var drawGameover = () => {
+
+		}
+		var clearCanvas = () => {
+			ctx.clearRect(0, 0, __WIDTH, __HEIGHT)
+		}
+		var refreshCanvas = () => {
+			clearCanvas()		
+			drawCanvas()
+		}
+		var goOnGame = () => {
+			console.log('goOnGame')
+			startGame()
+			
+		}	
+		var startGame = () => {
+			registerAction()
+			isStop = 0
+			gameInterval = setInterval(() => {
+				if(Oworm.move()){
+					gameover()
+					stopGame()
+					console.log('游戏结束!')
+				}else{
+					refreshCanvas()	
+				}
+				
+				// isStop = !0
+			},1000 /__FPS)
+		}
+		var gameover = () => {
+			drawError()
+			_mask.style.display = 'block'
+			_gameover.style.display = 'block'
+		}	
+		var initgame = () => {
+			ctx.clearRect(0, 0, __WIDTH, __HEIGHT)
+			isStop = !1
+			Oworm.init()
+
+			console.log(Oworm)
+			_mask.style.display = 'none'
+			_gameover.style.display = 'none'
+		}
+		var handleRestartGame = () => {
+
+			initgame()
+			startGame()
+		
+		}
+		
+
+		startGame()
+		
+
+	}
+	
+	
+	
+	__main()
+</script>
+</body>
+</html>
