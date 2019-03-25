@@ -23,8 +23,8 @@
 		}
 		.gameover{
 			position: absolute;
-			width: 200px
-			height:120;
+			width: 200px;
+			height:120px;
 			left: 50%;
 			margin-left: -100px;
 			top: 50%;
@@ -72,9 +72,15 @@
 		<div id='restargamebtn' >重新开始</div>
 	</div>
 </div>
-<script type="text/javascript" src='keydownaction.js'></script>
-<script type="text/javascript">
+<!-- <script type="text/javascript" src='keydownaction.js'></script> -->
+<script type="module">
+	import GameInfo from './gameinfo.js'
+	import GameInfo from './gameinfo.js'
+	// import GameInfo   from './runtime/gameinfo'
+	console.log(111)
 	var log = console.log.bind(console);
+	
+	console.log(game)
 	var worm = () => {
 		var  o = {
 			health:[],
@@ -89,9 +95,7 @@
 			o.speed = 1
 		}
 		o.move = () => {
-			
 			o.health.shift()
-			
 			var cur = o.health[o.health.length -1]
 			switch(o.direction){
 				case 1:
@@ -123,27 +127,16 @@
 		}
 		return o
 	}
-	var __main = () => {
-		var isStop = true
-		var myCanvas = document.querySelector('#my-canvas');
-		var ctx = myCanvas.getContext('2d')	
-		var gameInterval
-		var _mask = document.querySelector('.mask'), _gameover = document.querySelector('.gameover')
-		const __WIDTH = 500, __HEIGHT = 500, __GRIDNUM = 25, __FPS = 4, __SPEED = __WIDTH / __GRIDNUM;
-		var grid_width = 500 / __GRIDNUM;
-		myCanvas.setAttribute('width', __WIDTH)
-		myCanvas.setAttribute('height', __HEIGHT)
-		var drawBg = () => {
-			ctx.beginPath();
-			for(var i = 1; i < __GRIDNUM; i++){
-				ctx.moveTo(grid_width * i,0)
-				ctx.lineTo(grid_width * i,__WIDTH);
-				ctx.stroke()
-				ctx.moveTo(0,grid_width * i);
-				ctx.lineTo(__WIDTH,grid_width * i);
-				ctx.stroke()
-			}		
-		}
+	let __main = () => {
+		console.log(111)
+		let isStop = true
+		let myCanvas = document.querySelector('#my-canvas');
+		let ctx = myCanvas.getContext('2d')	
+		let _mask = document.querySelector('.mask'), _gameover = document.querySelector('.gameover')
+		
+		let gameInterval
+		var gameInfo = new GameInfo()
+		gameInfo.initGame(myCanvas, ctx)
 		restargamebtn.addEventListener('click', () => {
 			handleRestartGame()
 		}, false)
@@ -169,7 +162,6 @@
 						log('arrow_down')
 						Oworm.changeDirection(2)
 						break;
-					
 				}
 		}
 		var registerControlListener = (e) => {
@@ -202,14 +194,12 @@
 				ctx.lineTo(grid_width*(list[i][0] + 1),grid_width*(list[i][1] + 1))
 				ctx.lineTo(grid_width*(list[i][0] + 1),grid_width*list[i][1])
 				ctx.lineTo(grid_width*list[i][0],grid_width*list[i][1])
-				
 			} 
 			ctx.fill()
 		}
 		var drawError = () => {
 			console.log('变红')
 			var position = Oworm.health[Oworm.health.length - 1]
-
 			ctx.moveTo(grid_width*position[0],grid_width*position[1]);
 			ctx.lineTo(grid_width*position[0],grid_width*(position[1] + 1))
 			ctx.lineTo(grid_width*(position[0] + 1),grid_width*(position[1] + 1))
@@ -224,7 +214,7 @@
 		
 		var drawCanvas = () => {
 			drawWorm()
-			drawBg()
+			gameInfo.drawBg(ctx, grid_width)
 		}
 		var drawGameover = () => {
 
@@ -239,7 +229,6 @@
 		var goOnGame = () => {
 			console.log('goOnGame')
 			startGame()
-			
 		}	
 		var startGame = () => {
 			registerAction()
@@ -271,20 +260,11 @@
 			_gameover.style.display = 'none'
 		}
 		var handleRestartGame = () => {
-
 			initgame()
 			startGame()
-		
 		}
-		
-
 		startGame()
-		
-
 	}
-	
-	
-	
 	__main()
 </script>
 </body>
