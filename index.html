@@ -72,95 +72,98 @@
 		<div id='restargamebtn' >重新开始</div>
 	</div>
 </div>
-<!-- <script type="text/javascript" src='keydownaction.js'></script> -->
+<script type="text/javascript" src='keydownaction.js'></script>
 <script type="module">
-	import GameInfo from './gameinfo.js'
-	import GameInfo from './gameinfo.js'
-	// import GameInfo   from './runtime/gameinfo'
 	console.log(111)
+	import GameInfo from './gameinfo.js'
+	import Worm from './worm.js'
+	import action from './keydownaction.js'
+	// import GameInfo   from './runtime/gameinfo'
+	
 	var log = console.log.bind(console);
 	
 	console.log(game)
-	var worm = () => {
-		var  o = {
-			health:[],
-			direction:1,
-			arrow:'',
-			speed:1,
-		}
-		o.init = () => {
-			o.health = [[2,2],[2,3],[3,3],[4,3],[5,3],[6,3],[7,3],[8,3]]
-			o.direction = 1
-			o.arrow ='x'
-			o.speed = 1
-		}
-		o.move = () => {
-			o.health.shift()
-			var cur = o.health[o.health.length -1]
-			switch(o.direction){
-				case 1:
-					cur = [cur[0] + o.speed, cur[1]]
-					break
-				case 2:
-					cur = [cur[0], cur[1] + o.speed]
-					break
-				case -1:
-					cur = [cur[0] - o.speed, cur[1]]
-					break
-				case -2:
-					cur = [cur[0], cur[1] - o.speed]
-					break
-			}
-			o.health.push(cur)
+	// var worm = () => {
+	// 	var  o = {
+	// 		health:[],
+	// 		direction:1,
+	// 		arrow:'',
+	// 		speed:1,
+	// 	}
+	// 	o.init = () => {
+	// 		o.health = [[2,2],[2,3],[3,3],[4,3],[5,3],[6,3],[7,3],[8,3]]
+	// 		o.direction = 1
+	// 		o.arrow ='x'
+	// 		o.speed = 1
+	// 	}
+	// 	o.move = () => {
+	// 		o.health.shift()
+	// 		var cur = o.health[o.health.length -1]
+	// 		switch(o.direction){
+	// 			case 1:
+	// 				cur = [cur[0] + o.speed, cur[1]]
+	// 				break
+	// 			case 2:
+	// 				cur = [cur[0], cur[1] + o.speed]
+	// 				break
+	// 			case -1:
+	// 				cur = [cur[0] - o.speed, cur[1]]
+	// 				break
+	// 			case -2:
+	// 				cur = [cur[0], cur[1] - o.speed]
+	// 				break
+	// 		}
+	// 		o.health.push(cur)
 			
-			return o.judge(cur)
+	// 		return o.judge(cur)
 
-		}
-		o.judge = (position) => {
-				return position.some(v => v == 0 || v == 25 - 1) || o.health.slice(0,o.health.length - 1).some(v => {
-					return v[0] == position[0] && v[1] == position[1]
-				})
-		}
-		o.changeDirection = (direction) => {
-			if(direction + o.direction == 0) return
-			o.direction = direction
-		}
-		return o
-	}
+	// 	}
+	// 	o.judge = (position) => {
+	// 			return position.some(v => v == 0 || v == 25 - 1) || o.health.slice(0,o.health.length - 1).some(v => {
+	// 				return v[0] == position[0] && v[1] == position[1]
+	// 			})
+	// 	}
+	// 	o.changeDirection = (direction) => {
+	// 		if(direction + o.direction == 0) return
+	// 		o.direction = direction
+	// 	}
+	// 	return o
+	// }
 	let __main = () => {
 		console.log(111)
-		let isStop = true
+		// let isStop = true
 		let myCanvas = document.querySelector('#my-canvas');
 		let ctx = myCanvas.getContext('2d')	
 		let _mask = document.querySelector('.mask'), _gameover = document.querySelector('.gameover')
 		
 		let gameInterval
-		var gameInfo = new GameInfo()
+		let gameInfo = new GameInfo()
+		let worm = new Worm()
+		let action = new Action()
 		gameInfo.initGame(myCanvas, ctx)
 		restargamebtn.addEventListener('click', () => {
 			handleRestartGame()
 		}, false)
-		var Oworm = worm()
-		Oworm.init()
-		console.log(Oworm)
+		worm.init()
+		console.log(worm)
 		var registerMoveListener = (e) => {
 				console.log('keydown')
 				switch(e.keyCode){
 					case 37:
 						log('arrow_left')
-						Oworm.changeDirection(-1)
+						worm.changeDirection(-1)
 						break;
 					case 38:
 						log('arrow_top')
-						Oworm.changeDirection(-2)
+						worm.changeDirection(-2)
 						break;
 					case 39:
 						log('arrow_right')
-						Oworm.changeDirection(1)
+						worm.changeDirection(1)
 						break;
 					case 40:
 						log('arrow_down')
-						Oworm.changeDirection(2)
+						worm.changeDirection(2)
 						break;
 				}
 		}
@@ -177,36 +180,19 @@
 			}
 		}
 		var registerAction = () => {
-			handleAction('R_MOVE')
-			handleAction('R_CONTROL')
+			action.handleAction('R_MOVE')
+			action.handleAction('R_CONTROL')
 		}
 		var stopGame = () => {
-			document.removeEventListener('keydown', registerMoveListener, false)
-			isStop = !0
+			action.deleteMoveAction()
+			gameInfo.isStop = !0
 			clearInterval(gameInterval)
 		}
 		var drawWorm = () => {
-			var list = Oworm.health
-			ctx.fillStyle = 'black'
-			for(var i = 0; i < list.length; i++){
-				ctx.moveTo(grid_width*list[i][0],grid_width*list[i][1]);
-				ctx.lineTo(grid_width*list[i][0],grid_width*(list[i][1] + 1))
-				ctx.lineTo(grid_width*(list[i][0] + 1),grid_width*(list[i][1] + 1))
-				ctx.lineTo(grid_width*(list[i][0] + 1),grid_width*list[i][1])
-				ctx.lineTo(grid_width*list[i][0],grid_width*list[i][1])
-			} 
-			ctx.fill()
+			worm.drawWorm(ctx)
 		}
 		var drawError = () => {
-			console.log('变红')
-			var position = Oworm.health[Oworm.health.length - 1]
-			ctx.moveTo(grid_width*position[0],grid_width*position[1]);
-			ctx.lineTo(grid_width*position[0],grid_width*(position[1] + 1))
-			ctx.lineTo(grid_width*(position[0] + 1),grid_width*(position[1] + 1))
-			ctx.lineTo(grid_width*(position[0] + 1),grid_width*position[1])
-			ctx.lineTo(grid_width*position[0],grid_width*position[1])
-			ctx.fillStyle = 'red'
-			ctx.fill()	
+			gameInfo.drawError(ctx, worm.health[worm.health.length - 1])
 		}
 		var modeMorn = () => {
 
@@ -214,13 +200,13 @@
 		
 		var drawCanvas = () => {
 			drawWorm()
-			gameInfo.drawBg(ctx, grid_width)
+			gameInfo.drawBg(ctx)
 		}
 		var drawGameover = () => {
 
 		}
 		var clearCanvas = () => {
-			ctx.clearRect(0, 0, __WIDTH, __HEIGHT)
+			gameInfo.clearCanvas(ctx)
 		}
 		var refreshCanvas = () => {
 			clearCanvas()		
@@ -232,9 +218,9 @@
 		}	
 		var startGame = () => {
 			registerAction()
-			isStop = 0
+			gameInfo.isStop = 0
 			gameInterval = setInterval(() => {
-				if(Oworm.move()){
+				if(worm.move()){
 					gameover()
 					stopGame()
 					console.log('游戏结束!')
@@ -243,7 +229,7 @@
 				}
 				
 				// isStop = !0
-			},1000 /__FPS)
+			},1000 /gameInfo.__FPS)
 		}
 		var gameover = () => {
 			drawError()
@@ -252,10 +238,10 @@
 		}	
 		var initgame = () => {
 			ctx.clearRect(0, 0, __WIDTH, __HEIGHT)
-			isStop = !1
-			Oworm.init()
+			gameInfo.isStop = !1
+			worm.init()
 
-			console.log(Oworm)
+			console.log(worm)
 			_mask.style.display = 'none'
 			_gameover.style.display = 'none'
 		}

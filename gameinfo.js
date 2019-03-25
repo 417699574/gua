@@ -8,6 +8,7 @@ export default class GameInfo {
         this.__FPS = 4
         this.__SPEED = __WIDTH / __GRIDNUM
         this.__GRIDWIDTH = __WIDTH / __GRIDNUM
+        this.isStop = false
     }
      initGame(mycanvas, ctx){
         mycanvas.setAttribute('width', __WIDTH)
@@ -24,6 +25,20 @@ export default class GameInfo {
             ctx.lineTo(this.__WIDTH, this.__GRIDWIDTH * i);
             ctx.stroke()
         }		
+    }
+    clearCanvas(ctx){
+        ctx.clearRect(0, 0, this.__WIDTH, this.__HEIGHT)
+    }
+    drawError(ctx, position){
+        console.log('变红')
+        // var position = worm.health[worm.health.length - 1]
+        ctx.moveTo(this.__GRIDWIDTH*position[0],this.__GRIDWIDTH*position[1]);
+        ctx.lineTo(this.__GRIDWIDTH*position[0],this.__GRIDWIDTH*(position[1] + 1))
+        ctx.lineTo(this.__GRIDWIDTH*(position[0] + 1),this.__GRIDWIDTH*(position[1] + 1))
+        ctx.lineTo(this.__GRIDWIDTH*(position[0] + 1),this.__GRIDWIDTH*position[1])
+        ctx.lineTo(this.__GRIDWIDTH*position[0],this.__GRIDWIDTH*position[1])
+        ctx.fillStyle = 'red'
+        ctx.fill()  
     }
    
 

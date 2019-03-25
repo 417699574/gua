@@ -1,5 +1,12 @@
-
-var registerMoveListener = (e) => {
+constructor(){
+		this.actionmap = {
+			R_MOVE:registerMoveAction,
+			R_CONTROL:registerControlAction,
+			D_MOVE:deleteMoveAction,
+			D_CONTROL:deleteControlAction,
+		}
+	}
+	registerMoveListener(e, Oworm) {
 		console.log('keydown')
 		switch(e.keyCode){
 			case 37:
@@ -20,38 +27,31 @@ var registerMoveListener = (e) => {
 				break;
 			
 		}
-}
-var registerControlListener = (e) => {
-	switch(e.keyCode){
-		case 32:
-			console.log(isStop)
-			if(isStop){
-				goOnGame()
-			}else{
-				stopGame()
-			}
-			break;
 	}
-}
-var registerMoveAction = () => {
-	document.addEventListener('keydown', registerMoveListener, false)
-}
-var registerControlAction = () => {
-	document.addEventListener('keydown', registerControlListener, false)
-}
-var deleteMoveAction = () => {
-	document.removeEventListener('keydown', registerMoveListener, false)
-}
-var deleteControlAction = () => {
-	document.removeEventListener('keydown', registerControlListener, false)
-}
-
-var actionmap = {
-	R_MOVE:registerMoveAction,
-	R_CONTROL:registerControlAction,
-	D_MOVE:deleteMoveAction,
-	D_CONTROL:deleteControlAction,
-}
-var handleAction = (event) => {
-	actionmap[event]()
-}
+	registerControlListener(e, gameInfo) {
+		switch(e.keyCode){
+			case 32:
+				console.log(gameInfo.isStop)
+				if(gameInfo.isStop){
+					gameInfo.goOnGame()
+				}else{
+					gameInfo.stopGame()
+				}
+				break;
+		}
+	}
+	registerMoveAction() {
+		document.addEventListener('keydown', this.registerMoveListener, false)
+	}
+	registerControlAction() {
+		document.addEventListener('keydown', this.registerControlListener, false)
+	}
+	deleteMoveAction() {
+		document.removeEventListener('keydown', this.registerMoveListener, false)
+	}
+	deleteControlAction() {
+		document.removeEventListener('keydown', this.registerControlListener, false)
+	}
+	handleAction(event) {
+		this.actionmap[event]()
+	}
